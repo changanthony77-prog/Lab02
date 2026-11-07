@@ -5,16 +5,36 @@ import streamlit as st
 import pandas as pd
 import json
 import matplotlib.pyplot as plt
-import os
+from pathlib import Path
 
+
+# ==========================================
+# FILE PATHS
+# ==========================================
+
+# Find the main project folder.
+# Visuals.py is inside the pages folder.
+PROJECT_DIR = Path(__file__).resolve().parent.parent
+
+JSON_PATH = PROJECT_DIR / "data.json"
+CSV_PATH = PROJECT_DIR / "data.csv"
+
+
+# ==========================================
 # PAGE CONFIGURATION
+# ==========================================
+
 st.set_page_config(
     page_title="Data Visualizations",
     page_icon="📈",
     layout="wide"
 )
 
+
+# ==========================================
 # PAGE TITLE
+# ==========================================
+
 st.title("Data Visualizations 📈")
 
 
@@ -29,134 +49,158 @@ st.write(
     "South Korea's tallest buildings."
 )
 
-# Read the JSON file
-with open("pages/data.json", "r") as file:
-    data = json.load(file)
 
-# Get the building data
-data_points = data["data_points"]
+# Read the JSON file.
 
+if JSON_PATH.exists():
 
-# GRAPH 1: STATIC BAR CHART
+    with open(JSON_PATH, "r") as file:
+        data = json.load(file)
 
-st.subheader("1. Comparing Building Heights")
-
-st.write(
-    "This chart compares the heights of all five buildings "
-    "in the dataset."
-)
-
-building_names = []
-building_heights = []
-
-for building in data_points:
-    building_names.append(building["label"])
-    building_heights.append(building["value"])
-
-fig, ax = plt.subplots(figsize=(10, 5))
-
-ax.bar(building_names, building_heights)
-
-ax.set_title(data["chart_title"])
-ax.set_xlabel("Building")
-ax.set_ylabel("Height (meters)")
-
-plt.xticks(rotation=35, ha="right")
-plt.tight_layout()
-
-st.pyplot(fig)
-plt.close(fig)
+    data_points = data["data_points"]
 
 
-# GRAPH 2: DYNAMIC SCATTER PLOT
+    # --------------------------------------
+    # GRAPH 1: STATIC BAR CHART
+    # --------------------------------------
 
-st.subheader("2. Explore Building Heights")
+    st.subheader("1. Comparing Building Heights")
 
-st.write("Select a year and a building to explore the data.")
-
-if "year_cutoff" not in st.session_state:
-    st.session_state.year_cutoff = 2011
-
-st.slider(
-    "Show buildings completed in or after:",
-    min_value=2011,
-    max_value=2020,
-    key="year_cutoff"
-)
-
-# Filter buildings by year
-selected_buildings = []
-
-for building in data_points:
-    if building["year_built"] >= st.session_state.year_cutoff:
-        selected_buildings.append(building)
-
-# Sort buildings from oldest to newest
-selected_buildings.sort(
-    key=lambda building: building["year_built"]
-)
-
-if len(selected_buildings) > 0:
+    st.write(
+        "This chart compares the heights of all five buildings "
+        "in the dataset."
+    )
 
     building_names = []
+    building_heights = []
 
-    for building in selected_buildings:
+    for building in data_points:
         building_names.append(building["label"])
+        building_heights.append(building["value"])
 
-    selected_building_name = st.selectbox(
-        "Choose a building to highlight:",
-        building_names
-    )
+    fig, ax = plt.subplots(figsize=(10, 5))
 
-    selected_years = []
-    selected_heights = []
+    ax.bar(building_names, building_heights)
 
-    for building in selected_buildings:
-        selected_years.append(building["year_built"])
-        selected_heights.append(building["value"])
+    ax.set_title(data["chart_title"])
+    ax.set_xlabel("Building")
+    ax.set_ylabel("Height (meters)")
 
-    fig2, ax2 = plt.subplots(figsize=(10, 5))
-
-    ax2.scatter(
-        selected_years,
-        selected_heights,
-        label="Other buildings"
-    )
-
-    # Highlight selected building
-    for building in selected_buildings:
-        if building["label"] == selected_building_name:
-
-            ax2.scatter(
-                building["year_built"],
-                building["value"],
-                s=180,
-                marker="*",
-                label="Selected building"
-            )
-
-            ax2.annotate(
-                building["label"],
-                (building["year_built"], building["value"]),
-                xytext=(8, 8),
-                textcoords="offset points",
-                fontsize=9
-            )
-
-    ax2.set_title("Building Height by Completion Year")
-    ax2.set_xlabel("Year Completed")
-    ax2.set_ylabel("Height (meters)")
-
-    ax2.set_xticks(sorted(set(selected_years)))
-
-    ax2.legend()
+    plt.xticks(rotation=35, ha="right")
     plt.tight_layout()
 
-    st.pyplot(fig2)
-    plt.close(fig2)
+    st.pyplot(fig)
+    plt.close(fig)
+
+
+    # --------------------------------------
+    # GRAPH 2: DYNAMIC SCATTER PLOT
+    # --------------------------------------
+
+    st.subheader("2. Explore Building Heights")
+
+    st.write(
+        "Select a year and a building to explore the data."
+    )
+
+    if "year_cutoff" not in st.session_state:
+        st.session_state.year_cutoff = 2011
+
+    st.slider(
+        "Show buildings completed in or after:",
+        min_value=2011,
+        max_value=2020,
+        key="year_cutoff"
+    )
+
+    # Filter buildings by year.
+
+    selected_buildings = []
+
+    for building in data_points:
+
+        if building["year_built"] >= st.session_state.year_cutoff:
+            selected_buildings.append(building)
+
+    # Sort buildings from oldest to newest.
+
+    selected_buildings.sort(
+        key=lambda building: building["year_built"]
+    )
+
+    if len(selected_buildings) > 0:
+
+        building_names = []
+
+        for building in selected_buildings:
+            building_names.append(building["label"])
+
+        selected_building_name = st.selectbox(
+            "Choose a building to highlight:",
+            building_names
+        )
+
+        selected_years = []
+        selected_heights = []
+
+        for building in selected_buildings:
+            selected_years.append(building["year_built"])
+            selected_heights.append(building["value"])
+
+        fig2, ax2 = plt.subplots(figsize=(10, 5))
+
+        # Display all buildings.
+
+        ax2.scatter(
+            selected_years,
+            selected_heights,
+            label="Other buildings"
+        )
+
+        # Highlight the selected building.
+
+        for building in selected_buildings:
+
+            if building["label"] == selected_building_name:
+
+                ax2.scatter(
+                    building["year_built"],
+                    building["value"],
+                    s=180,
+                    marker="*",
+                    label="Selected building"
+                )
+
+                ax2.annotate(
+                    building["label"],
+                    (building["year_built"], building["value"]),
+                    xytext=(8, 8),
+                    textcoords="offset points",
+                    fontsize=9
+                )
+
+        ax2.set_title("Building Height by Completion Year")
+        ax2.set_xlabel("Year Completed")
+        ax2.set_ylabel("Height (meters)")
+
+        ax2.set_xticks(sorted(set(selected_years)))
+
+        ax2.legend()
+        plt.tight_layout()
+
+        st.pyplot(fig2)
+        plt.close(fig2)
+
+    else:
+
+        st.warning("No buildings match the selected year.")
 
 else:
-    st.warning("No buildings match the selected year.")
+
+    st.error(
+        "data.json could not be found. "
+        "Make sure it is uploaded to the main project folder."
+    )
 
 
 # ==========================================
@@ -172,27 +216,28 @@ st.write(
     "the Data Collection Survey."
 )
 
-# Check whether data.csv exists
-if os.path.exists("data.csv") and os.path.getsize("data.csv") > 0:
 
-    survey_df = pd.read_csv("data.csv")
+# Check whether data.csv exists.
 
-    # FIX: Convert column names to lowercase
-    survey_df.columns = survey_df.columns.str.strip().str.lower()
+if CSV_PATH.exists() and CSV_PATH.stat().st_size > 0:
+
+    survey_df = pd.read_csv(CSV_PATH)
+
+    # Standardize column names.
+
+    survey_df.columns = (
+        survey_df.columns.str.strip().str.lower()
+    )
 
     st.subheader("Submitted Survey Responses")
+
     st.dataframe(survey_df)
 
-    st.subheader("Survey Data Visualization")
+    # Check for required columns.
 
-    st.write("Survey DataFrame:")
-    st.write(survey_df)
-
-    st.write("Column names:")
-    st.write(survey_df.columns.tolist())
-
-    # Check required columns
     if "category" in survey_df.columns and "value" in survey_df.columns:
+
+        # Convert values into numbers.
 
         survey_df["value"] = pd.to_numeric(
             survey_df["value"],
@@ -205,66 +250,27 @@ if os.path.exists("data.csv") and os.path.getsize("data.csv") > 0:
 
         if not survey_df.empty:
 
+            # Calculate total values for each category.
+
             category_totals = survey_df.groupby(
                 "category"
             )["value"].sum()
 
-            st.bar_chart(category_totals)
+            # Sort categories from largest to smallest.
 
-        else:
-            st.warning("No valid survey data is available.")
-
-    else:
-        st.warning(
-            "Your data.csv file must contain Category and Value columns."
-        )
-
-else:
-    st.warning("No survey data has been submitted yet.")
-
-
-# ==========================================
-# GRAPH 3 AND GRAPH 4: SURVEY VISUALIZATIONS
-# ==========================================
-
-if os.path.exists("data.csv") and os.path.getsize("data.csv") > 0:
-
-    survey_df = pd.read_csv("data.csv")
-
-    # FIX: Standardize column names
-    survey_df.columns = survey_df.columns.str.strip().str.lower()
-
-    if "category" in survey_df.columns and "value" in survey_df.columns:
-
-        survey_df["value"] = pd.to_numeric(
-            survey_df["value"],
-            errors="coerce"
-        )
-
-        survey_df = survey_df.dropna(
-            subset=["category", "value"]
-        )
-
-        if not survey_df.empty:
-
-            # Calculate total values for each category
-            category_totals = survey_df.groupby(
-                "category"
-            )["value"].sum()
-
-            # Sort categories from largest to smallest
             category_totals = category_totals.sort_values(
                 ascending=False
             )
 
-            # ----------------------------------
+
+            # --------------------------------------
             # GRAPH 3: STATIC BAR CHART
-            # ----------------------------------
+            # --------------------------------------
 
             st.subheader("3. Total Values by Category")
 
             st.write(
-                "This static bar chart compares the total values "
+                "This bar chart compares the total values "
                 "submitted for each category."
             )
 
@@ -285,9 +291,10 @@ if os.path.exists("data.csv") and os.path.getsize("data.csv") > 0:
             st.pyplot(fig3)
             plt.close(fig3)
 
-            # ----------------------------------
+
+            # --------------------------------------
             # GRAPH 4: DYNAMIC PIE CHART
-            # ----------------------------------
+            # --------------------------------------
 
             st.subheader("4. Explore Survey Categories")
 
@@ -298,37 +305,45 @@ if os.path.exists("data.csv") and os.path.getsize("data.csv") > 0:
 
             max_categories = len(category_totals)
 
-            # Set up session state
+            # Set up session state.
+
             if "number_of_categories" not in st.session_state:
                 st.session_state.number_of_categories = min(
                     3, max_categories
                 )
 
-            # Category selection slider
+            # Keep the saved value within the available range.
+
+            st.session_state.number_of_categories = min(
+                st.session_state.number_of_categories,
+                max_categories
+            )
+
+            # Category selection slider.
+
             if max_categories > 1:
 
                 st.slider(
                     "Number of categories to display:",
                     min_value=1,
                     max_value=max_categories,
-                    value=min(
-                        st.session_state.number_of_categories,
-                        max_categories
-                    ),
                     key="number_of_categories"
                 )
 
             else:
+
                 st.write("Only one category is available.")
 
             number_selected = st.session_state.number_of_categories
 
-            # Get largest categories
+            # Get the largest categories.
+
             top_categories = category_totals.head(
                 number_selected
             )
 
-            # Get remaining categories
+            # Get the remaining categories.
+
             remaining_categories = category_totals.iloc[
                 number_selected:
             ]
@@ -336,13 +351,15 @@ if os.path.exists("data.csv") and os.path.getsize("data.csv") > 0:
             pie_labels = list(top_categories.index)
             pie_values = list(top_categories.values)
 
-            # Combine remaining categories into Other
+            # Combine remaining categories into Other.
+
             if len(remaining_categories) > 0:
 
                 pie_labels.append("Other")
                 pie_values.append(remaining_categories.sum())
 
-            # Create pie chart
+            # Create pie chart.
+
             fig4, ax4 = plt.subplots(figsize=(8, 6))
 
             ax4.pie(
@@ -360,12 +377,15 @@ if os.path.exists("data.csv") and os.path.getsize("data.csv") > 0:
             plt.close(fig4)
 
         else:
+
             st.warning("No valid survey data is available.")
 
     else:
+
         st.warning(
-            "The CSV file must contain Category and Value columns."
+            "Your data.csv file must contain Category and Value columns."
         )
 
 else:
+
     st.warning("No survey data has been submitted yet.")
