@@ -12,9 +12,8 @@ from pathlib import Path
 # FILE PATHS
 # ==========================================
 
-# Find the main project folder.
-# Visuals.py is inside the pages folder.
-PROJECT_DIR = Path(__file__).resolve().parent.parent
+# Locate the main GitHub repository folder.
+PROJECT_DIR = Path(__file__).resolve().parents[2]
 
 JSON_PATH = PROJECT_DIR / "data.json"
 CSV_PATH = PROJECT_DIR / "data.csv"
@@ -149,15 +148,13 @@ if JSON_PATH.exists():
 
         fig2, ax2 = plt.subplots(figsize=(10, 5))
 
-        # Display all buildings.
-
         ax2.scatter(
             selected_years,
             selected_heights,
             label="Other buildings"
         )
 
-        # Highlight the selected building.
+        # Highlight selected building.
 
         for building in selected_buildings:
 
@@ -199,7 +196,7 @@ else:
 
     st.error(
         "data.json could not be found. "
-        "Make sure it is uploaded to the main project folder."
+        "Check that it is uploaded to the main GitHub repository."
     )
 
 
@@ -233,11 +230,9 @@ if CSV_PATH.exists() and CSV_PATH.stat().st_size > 0:
 
     st.dataframe(survey_df)
 
-    # Check for required columns.
+    # Check required columns.
 
     if "category" in survey_df.columns and "value" in survey_df.columns:
-
-        # Convert values into numbers.
 
         survey_df["value"] = pd.to_numeric(
             survey_df["value"],
@@ -250,13 +245,11 @@ if CSV_PATH.exists() and CSV_PATH.stat().st_size > 0:
 
         if not survey_df.empty:
 
-            # Calculate total values for each category.
+            # Calculate category totals.
 
             category_totals = survey_df.groupby(
                 "category"
             )["value"].sum()
-
-            # Sort categories from largest to smallest.
 
             category_totals = category_totals.sort_values(
                 ascending=False
@@ -305,14 +298,10 @@ if CSV_PATH.exists() and CSV_PATH.stat().st_size > 0:
 
             max_categories = len(category_totals)
 
-            # Set up session state.
-
             if "number_of_categories" not in st.session_state:
                 st.session_state.number_of_categories = min(
                     3, max_categories
                 )
-
-            # Keep the saved value within the available range.
 
             st.session_state.number_of_categories = min(
                 st.session_state.number_of_categories,
@@ -336,13 +325,13 @@ if CSV_PATH.exists() and CSV_PATH.stat().st_size > 0:
 
             number_selected = st.session_state.number_of_categories
 
-            # Get the largest categories.
+            # Get largest categories.
 
             top_categories = category_totals.head(
                 number_selected
             )
 
-            # Get the remaining categories.
+            # Get remaining categories.
 
             remaining_categories = category_totals.iloc[
                 number_selected:
