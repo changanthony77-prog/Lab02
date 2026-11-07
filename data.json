@@ -1,0 +1,30 @@
+{
+    "chart_title": "South Korea's tallest buildings and their height",
+    "data_points": [
+        {
+            "label": "Doosan Haeundae We've the Zenith Tower A",
+            "value": 300,
+            "year_built": 2011
+        },
+        {
+            "label": "Northeast Asia Trade Tower",
+            "value": 305,
+            "year_built": 2014
+        },
+        {
+            "label": "Lotte World Tower",
+            "value": 556,
+            "year_built": 2017
+        },
+        {
+            "label": "Hauendae LCT The Sharp Residential Tower A",
+            "value": 412,
+            "year_built": 2019
+        },
+        {
+            "label": "Parc1 Tower A",
+            "value": 322,
+            "year_built": 2020
+        }
+    ]
+}
